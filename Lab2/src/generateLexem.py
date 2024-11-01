@@ -23,24 +23,25 @@ alphabetBF = {'a', 'b', 'c', '0', '1', '2'}
 
 alphabetRegex = {'a', 'b', 'c', '0', '1', '2', '*', '(', ')'}
 
-def randomRegex(alphabetBF, alphabetRegex, min_length=1, max_length=10,):
+def randomRegex(alphabetBF, alphabetRegex, min_length=10, max_length=20,):
     if not alphabetRegex or not alphabetBF:
-      return False, '', ''
+      return False, '', '', {}
 
     while True:
         length = random.randint(min_length, max_length)
-        sigma = set()
         s = ''
-
+        curAlph = set(random.sample(list(alphabetBF), k=random.randint(1, min(len(alphabetBF), 2))))
+        if alphabetRegex == alphabetBF:
+            alphabetRegex = curAlph  
+        else:
+            alphabetRegex = curAlph | {'*', '(', ')'}
         for _ in range(length):
           symb = random.choice(list(alphabetRegex))
-          if symb in alphabetBF:
-            sigma.add(symb)
           s += symb
-
+        
         try:
             r = str2regexp(s)
-            return True, r, s, sigma  
+            return True, r, s, curAlph  
         except Exception as e:
 
             #print(f"Ошибка: {e}. Пробуем снова.")
@@ -53,9 +54,9 @@ def generateRandomRegex(lexemRegex, alphabetBF, alphabetRegex):
   for lexem in lexemRegex:
     if not alphabetBF:
        return False, lexemRegex
-    #print(f"generating for {lexem.name}")
+    print(f"generating for {lexem.name}")
     minLenRegex = 1
-    maxLenRegex = 15
+    maxLenRegex = 20
     regExpr = RegExp()
     regStr = ''
     sigma = {}
@@ -121,6 +122,8 @@ def checkCorrection(lexemObjects):
 
   for lexem in lexemObjects:
     if not lexem.sigma:
+        for lex in lexemObjects:
+          print(lex.name, lex.sigma, lex.regStr)
         return False, f"Some alphabets are empty"
 
   if lexemObjects[0].sigma & lexemObjects[1].sigma:
@@ -143,30 +146,42 @@ def checkCorrection(lexemObjects):
         secondLetter = getLastLetter(lexem.regStr, alphabetBF)
         alphabetBF = alphabetBF - {firstLetter, secondLetter}
         alphabetRegex = alphabetRegex - {firstLetter, secondLetter}
- 
+  for lex in lexemObjects:
+    print(lex.name, lex.sigma, lex.regStr)
   while True:
-    #print("altern brackets:")
+    print("altern brackets:")
     fl = True
     for i in range(6, len(lexemObjects)):
+        if not fl:
+          break
         for j in range(i + 1, len(lexemObjects)):
+            if not fl:
+               break
             if checkIntersection(lexemObjects[i].dfa, lexemObjects[j].dfa):
                 fl = False
                 for i in range(6, len(lexemObjects)):
                     e, lexemObjects[i].regExpr, lexemObjects[i].regStr, lexemObjects[i].sigma = randomRegex(alphabetBF, alphabetRegex)
+                    
                     lexemObjects[i].dfa = lexemObjects[i].regExpr.toDFA()
-                #return False, f"Languages for {lexemObjects[i].name} and {lexemObjects[j].name} have non-zero intersection"
+                    #print(False, f"Languages for {lexemObjects[i].name} and {lexemObjects[j].name} have non-zero intersection")
 
 
     for i in range(6, len(lexemObjects)):
+        if not fl:
+          break
         for j in range(i + 1, len(lexemObjects)):
+            if not fl:
+              break
             combinedDFA = lexemObjects[i].dfa.concat(lexemObjects[j].dfa)
             for k in range(6, len(lexemObjects)):
+                if not fl:
+                  break
                 if checkIntersection(lexemObjects[k].dfa, combinedDFA):
                     fl = False
                     for i in range(6, len(lexemObjects)):
                         e, lexemObjects[i].regExpr, lexemObjects[i].regStr, lexemObjects[i].sigma = randomRegex(alphabetBF, alphabetRegex)
                         lexemObjects[i].dfa = lexemObjects[i].regExpr.toDFA()
-                    #return False, f"Concatenated languages for {lexemObjects[i].name} and {lexemObjects[j].name} should not intersect any single bracket language."
+                        #print(False, f"Concatenated languages for {lexemObjects[i].name} and {lexemObjects[j].name} should not intersect any single bracket language.")
                 
     if fl:
       break
@@ -200,12 +215,13 @@ fl, mes = checkCorrection(lexemObjects)
 print(fl, ': ' + mes)
 while not fl or not e:
   alphabetBF = {'a', 'b', 'c', '0', '1', '2'}
-  alphabetRegex = {'a', 'b', 'c', '0', '1', '2', '*', '(', ')'}
+  alphabetRegex = {'a', 'b', 'c', '0', '1', '2', '*', '(', ')', '|'}
 
   e, lexemObjects = generateRandomRegex(lexemObjects, alphabetBF, alphabetRegex)
  # for lex in lexemObjects:
    #  print(lex.name, lex.sigma, lex.regStr)
-
+  if not e:
+    continue
   fl, mes = checkCorrection(lexemObjects)
   print(fl, ': ' + mes)
 for lex in lexemObjects:
@@ -213,3 +229,4 @@ for lex in lexemObjects:
 print(time() - start)
 
 print(countChecks, countGens)
+

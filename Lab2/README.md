@@ -3,10 +3,13 @@
 Автомат, распознающий лексически правильные конструкции
 обфусцированного рефала, строится по следующей грамматике:
 [program] ::= [eol]*([definition][eol]+)+
+
 [definition] ::= [const] [lbr-1] ([eol]*[sentence])* [eol]*[rbr-1]
+
 [sentence] ::= [pattern][equal][expression][sep]
-[pattern] ::= [lbr-3][pattern][rbr-3]|[pattern][blank][pattern]
-| [var] | [const] |
+
+[pattern] ::= [lbr-3][pattern][rbr-3]|[pattern][blank][pattern] | [var] | [const] |
+
 [expression] ::= [var] | [const] | [expression][blank][expression]
 [lbr-3] [expression] [rbr-3] |
 [lbr-2] [const] [blank] [expression] [rbr-2]
