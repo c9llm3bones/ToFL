@@ -1,3 +1,9 @@
+import random
+from FAdo.fa import *
+from FAdo.reex import *
+from time import time
+import generateLexem
+
 for lexem in lexemObjects:
   lexem.setRegex(lexem.regStr, lexem.sigma)
   lexem.regExpr.reduced()
