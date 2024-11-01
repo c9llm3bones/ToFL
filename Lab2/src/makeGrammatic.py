@@ -1,91 +1,123 @@
-from FAdo.fa import *
-from FAdo.reex import *
-import generateLexem.py
+for lexem in lexemObjects:
+  lexem.setRegex(lexem.regStr, lexem.sigma)
+  lexem.regExpr.reduced()
+  lexem.dfa.minimal()
+  
+lexem_dict = {lex.name: lex for lex in lexemObjects}
+
+grammar_automata = {}
+
+"""[program] ::= [eol]*([definition][eol]+)+
+
+[definition] ::= [const] [lbr-1] ([eol]*[sentence])* [eol]*[rbr-1]
+
+[sentence] ::= [pattern][equal][expression][sep]
+
+[pattern] ::= [lbr-3][pattern][rbr-3]|[pattern][blank][pattern]
+| [var] | [const] |
+
+[expression] ::= [var] | [const] | [expression][blank][expression]
+[lbr-3] [expression] [rbr-3] |
+[lbr-2] [const] [blank] [expression] [rbr-2]"""
+
+def create_rule_automata_dfa(lexem_dict):
+    # pattern
+    pattern_dfa = lexem_dict["var"].dfa.union(
+        lexem_dict["const"].dfa).toDFA().minimal()
+
+    grammar_automata["pattern"] = pattern_dfa.union(
+        lexem_dict["lbr-3"].dfa.concat(pattern_dfa).concat(lexem_dict["rbr-3"].dfa).union(
+            pattern_dfa.concat(lexem_dict["blank"].dfa).concat(pattern_dfa)
+        ).toDFA()
+    ).toDFA().minimal()
+
+    # expression
+    expression_dfa = lexem_dict["var"].dfa.union(
+        lexem_dict["const"].dfa).toDFA().minimal()
+
+    grammar_automata["expression"] = expression_dfa.union(
+        expression_dfa.concat(lexem_dict["blank"].dfa).concat(expression_dfa)).union(
+            lexem_dict["lbr-3"].dfa.concat(expression_dfa).concat(lexem_dict["rbr-3"].dfa)).union(
+                lexem_dict["lbr-2"].dfa.concat(lexem_dict["const"].dfa).concat(lexem_dict["blank"].dfa).concat(
+                    expression_dfa).concat(lexem_dict["rbr-2"].dfa)
+    ).toDFA().minimal()
+
+    # sentence
+    grammar_automata["sentence"] = grammar_automata["pattern"].concat(
+        lexem_dict["equal"].dfa).concat(grammar_automata["expression"]).concat(
+            lexem_dict["sep"].dfa).toDFA().minimal()
+
+    # definition
+    grammar_automata["definition"] = lexem_dict["const"].dfa.concat(
+        lexem_dict["lbr-1"].dfa).concat(
+            lexem_dict["eol"].dfa.star().concat(grammar_automata["sentence"]).star()).concat(
+                lexem_dict["eol"].dfa.star()).concat(lexem_dict["rbr-1"].dfa).toDFA().minimal()
+    # programm
+    grammar_automata["program"] = lexem_dict["eol"].dfa.star().concat(
+        grammar_automata["definition"].concat(lexem_dict["eol"].dfa.plus()).plus()
+    ).toDFA().minimal()
+
+    return grammar_automata
 
 
 
-def create_grammar_automaton(lexemObjects):
-    # Автомат для [eol]*([definition][eol]+)+
-    program_nfa = NFA()
-    eol_dfa = lexemObjects[0].dfa  # DFA для [eol]
-    definition_dfa = create_definition_automaton(lexemObjects)  # Автомат для [definition]
+def create_rule_automata_reg(lexem_dict):
+    grammar_automata = {}
+
+    # pattern
+    pattern_re_str = f"({lexem_dict['var'].regStr}|{lexem_dict['const'].regStr})"
     
-    program_nfa = eol_dfa.star()  # [eol]*
-    program_nfa.concat(definition_dfa.concat(eol_dfa.plus()).plus())  # ([definition][eol]+)+
+    grammar_automata["pattern"] = f"{pattern_re_str}|{lexem_dict['lbr-3'].regStr}{pattern_re_str}{lexem_dict['rbr-3'].regStr}|{pattern_re_str}{lexem_dict['blank'].regStr}{pattern_re_str}"
+    grammar_automata["pattern"] = str2regexp(grammar_automata["pattern"]).reduced()
     
-    return program_nfa.toDFA()
+    # expression
+    expression_re_str = f"({lexem_dict['var'].regStr}|{lexem_dict['const'].regStr})"
+    
+    grammar_automata["expression"] = f"{expression_re_str}|{expression_re_str}{lexem_dict['blank'].regStr}{expression_re_str}|{lexem_dict['lbr-3'].regStr}{expression_re_str}{lexem_dict['rbr-3'].regStr}|{lexem_dict['lbr-2'].regStr}{lexem_dict['const'].regStr}{lexem_dict['blank'].regStr}{expression_re_str}{lexem_dict['rbr-2'].regStr}"
+    grammar_automata["expression"] = str2regexp(grammar_automata["expression"]).reduced()
 
-def create_definition_automaton(lexemObjects):
-    definition_nfa = NFA()
-    const_dfa = lexemObjects[4].dfa  # DFA для [const]
-    lbr1_dfa = lexemObjects[6].dfa   # DFA для [lbr-1]
-    rbr1_dfa = lexemObjects[9].dfa   # DFA для [rbr-1]
     
-    sentence_dfa = create_sentence_automaton(lexemObjects)  # Автомат для [sentence]
-    eol_dfa = lexemObjects[0].dfa  # DFA для [eol]
-    
-    definition_nfa.concat(const_dfa)  # [const]
-    definition_nfa.concat(lbr1_dfa)   # [lbr-1]
-    definition_nfa.concat(eol_dfa.star().concat(sentence_dfa).star())  # ([eol]*[sentence])*
-    definition_nfa.concat(eol_dfa.star())  # [eol]*
-    definition_nfa.concat(rbr1_dfa)   # [rbr-1]
-    
-    return definition_nfa.toDFA()
+    # sentence
+    grammar_automata["sentence"] = f"{grammar_automata['pattern']}{lexem_dict['equal'].regStr}{grammar_automata['expression']}{lexem_dict['sep'].regStr}"
+    grammar_automata["sentence"] = str2regexp(grammar_automata["sentence"])
 
-def create_sentence_automaton(lexemObjects):
-    sentence_nfa = NFA()
-    pattern_dfa = create_pattern_automaton(lexemObjects)  # Автомат для [pattern]
-    equal_dfa = lexemObjects[2].dfa   # DFA для [equal]
-    expression_dfa = create_expression_automaton(lexemObjects)  # Автомат для [expression]
-    sep_dfa = lexemObjects[3].dfa     # DFA для [sep]
     
-    sentence_nfa.concat(pattern_dfa)  # [pattern]
-    sentence_nfa.concat(equal_dfa)    # [equal]
-    sentence_nfa.concat(expression_dfa)  # [expression]
-    sentence_nfa.concat(sep_dfa)      # [sep]
+    # definition
+    grammar_automata["definition"] = f"{lexem_dict['const'].regStr}{lexem_dict['lbr-1'].regStr}({lexem_dict['eol'].regStr}*{grammar_automata['sentence']})*{lexem_dict['eol'].regStr}*{lexem_dict['rbr-1'].regStr}"
+    grammar_automata["definition"] = str2regexp(grammar_automata["definition"]).reduced()
     
-    return sentence_nfa.toDFA()
+    # program
+    grammar_automata["program"] = f"{lexem_dict['eol'].regStr}*({grammar_automata['definition']}{lexem_dict['eol'].regStr}*)*"
+    
+    grammar_automata["program"] = str2regexp(grammar_automata["program"]).reduced()
 
-def create_pattern_automaton(lexemObjects):
-    pattern_nfa = NFA()
-    lbr3_dfa = lexemObjects[8].dfa   # DFA для [lbr-3]
-    rbr3_dfa = lexemObjects[11].dfa  # DFA для [rbr-3]
-    blank_dfa = lexemObjects[1].dfa  # DFA для [blank]
-    var_dfa = lexemObjects[5].dfa    # DFA для [var]
-    const_dfa = lexemObjects[4].dfa  # DFA для [const]
-    
-    # [lbr-3][pattern][rbr-3]
-    pattern_nfa.union(lbr3_dfa.concat(create_pattern_automaton(lexemObjects)).concat(rbr3_dfa))
-    # [pattern][blank][pattern]
-    pattern_nfa.union(create_pattern_automaton(lexemObjects).concat(blank_dfa).concat(create_pattern_automaton(lexemObjects)))
-    # [var] | [const]
-    pattern_nfa.union(var_dfa).union(const_dfa)
-    
-    return pattern_nfa.toDFA()
-
-def create_expression_automaton(lexemObjects):
-    expression_nfa = NFA()
-    var_dfa = lexemObjects[5].dfa    # DFA для [var]
-    const_dfa = lexemObjects[4].dfa  # DFA для [const]
-    blank_dfa = lexemObjects[1].dfa  # DFA для [blank]
-    lbr2_dfa = lexemObjects[7].dfa   # DFA для [lbr-2]
-    rbr2_dfa = lexemObjects[10].dfa  # DFA для [rbr-2]
-    lbr3_dfa = lexemObjects[8].dfa   # DFA для [lbr-3]
-    rbr3_dfa = lexemObjects[11].dfa  # DFA для [rbr-3]
-
-    # [var] | [const]
-    expression_nfa.union(var_dfa).union(const_dfa)
-    # [expression][blank][expression]
-    expression_nfa.union(create_expression_automaton(lexemObjects).concat(blank_dfa).concat(create_expression_automaton(lexemObjects)))
-    # [lbr-3][expression][rbr-3]
-    expression_nfa.union(lbr3_dfa.concat(create_expression_automaton(lexemObjects)).concat(rbr3_dfa))
-    # [lbr-2][const][blank][expression][rbr-2]
-    expression_nfa.union(lbr2_dfa.concat(const_dfa).concat(blank_dfa).concat(create_expression_automaton(lexemObjects)).concat(rbr2_dfa))
-    
-    return expression_nfa.toDFA()
+    return grammar_automata
 
 
+start = time()
+grammar_automata_dfa = create_rule_automata_dfa(lexem_dict)
+print(time() - start)
 
-# Пример использования:
-program_dfa = create_grammar_automaton(lexemObjects)
+start = time()
+grammar_automata_reg = create_rule_automata_reg(lexem_dict)
+print(time() - start)
 
+
+"""
+for automaton in grammar_automata_reg:
+    print(automaton, grammar_automata_reg[automaton])
+"""
+start = time()
+
+for automaton in grammar_automata_reg:
+    grammar_automata_reg[automaton] = grammar_automata_reg[automaton].nfaPD().toDFA().minimal()
+print(time() - start)
+
+for automaton in grammar_automata_reg:
+    print(automaton, len(grammar_automata_reg[automaton].States))
+
+for automaton in grammar_automata_dfa:
+    print(automaton, len(grammar_automata_dfa[automaton].States))
+     
+for automaton in grammar_automata_reg:
+    print(grammar_automata_dfa[automaton] == grammar_automata_reg[automaton])
