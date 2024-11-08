@@ -10,16 +10,16 @@ def members(dfa, word):
 def generateRandomWord(dfa):
     return dfa.witness()
 
-def checkEquvivalence(dfa1, dfa2):
+def checkEquivalence(dfa1, dfa2):
     if dfa1 == dfa2:
-        return True
+        return True, ''
 
     dfaDif = dfa1 & dfa2
 
     if dfaDif.isEmpty():
         difDfa = dfa2 & dfa1
-        return generateRandomWord(difDfa)
+        return False, generateRandomWord(difDfa)
 
-    return generateRandomWord(dfaDif)
+    return False, generateRandomWord(dfaDif)
 
     

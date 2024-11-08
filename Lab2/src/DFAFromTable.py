@@ -25,7 +25,7 @@ def makeDfaFromTableFado(mainPrefixes, extendedPrefixes, suffixes, table):
         tableString = allStrings[prefix]
         state = tableStringToState[tableString]
         prefixToState[prefix] = state
-        if state == 'ε':
+        if prefix == 'ε':  # Здесь заменяем 'ε' на '@epsilon' для согласованности
             prefixToState[prefix] = '@epsilon'
 
     nfa = NFA()
@@ -34,7 +34,11 @@ def makeDfaFromTableFado(mainPrefixes, extendedPrefixes, suffixes, table):
     for state in states:
         nfa.addState(state)
     
-    initialState = prefixToState['@epsilon']
+    # Используем '@epsilon' в качестве начального состояния
+    initialState = prefixToState.get('@epsilon')
+    if initialState is None:
+        raise ValueError("Initial state '@epsilon' not found in prefixToState")
+
     nfa.setInitial({initialState})
 
     finalStates = set()
@@ -54,11 +58,11 @@ def makeDfaFromTableFado(mainPrefixes, extendedPrefixes, suffixes, table):
                 nextState = prefixToState[newPrefix]
                 nfa.addTransition(currentState, symbol, nextState)
 
-    return nfa
+    return nfa.toDFA().minimal()
 
-mainPrefixes = ["ε", "0", "1", "01", "02"]
+mainPrefixes = ["@epsilon", "0", "1", "01", "02"]
 nonMainPrefixes = ["00", "11", "012", "021", "102", "202"]
-suffixes = ["ε", "120", "01", "0"]
+suffixes = ["@epsilon", "120", "01", "0"]
 tableData = "1 0 0 0 0 0 1 0 1 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
 
 table = {}
@@ -69,12 +73,10 @@ for prefix in mainPrefixes + nonMainPrefixes:
         table[(prefix, suffix)] = tableValues[index]
         index += 1
 
-nfa = makeDfaFromTableFado(mainPrefixes, nonMainPrefixes, suffixes, table)
+dfa = makeDfaFromTableFado(mainPrefixes, nonMainPrefixes, suffixes, table)
 
-dfa = nfa.toDFA().minimal()
-dfa.display()
-nfa.display()
+#dfa.display()
 
 reg = FA2regexpCG(dfa)
-print(reg.toNFA().toDFA() == dfa)
-reg.toNFA().toDFA().display()
+#print(reg.toNFA().toDFA() == dfa)
+#reg.toNFA().toDFA().display()

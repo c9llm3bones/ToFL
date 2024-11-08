@@ -49,12 +49,12 @@ def randomRegex(alphabetBF, alphabetRegex, min_length=10, max_length=20,):
 
 
 def generateRandomRegex(lexemRegex, alphabetBF, alphabetRegex):
-  global countGens
+  global countGens 
   countGens+=1
   for lexem in lexemRegex:
     if not alphabetBF:
        return False, lexemRegex
-    print(f"generating for {lexem.name}")
+    #print(f"generating for {lexem.name}")
     minLenRegex = 1
     maxLenRegex = 20
     regExpr = RegExp()
@@ -122,8 +122,8 @@ def checkCorrection(lexemObjects):
 
   for lexem in lexemObjects:
     if not lexem.sigma:
-        for lex in lexemObjects:
-          print(lex.name, lex.sigma, lex.regStr)
+        #for lex in lexemObjects:
+        #  print(lex.name, lex.sigma, lex.regStr)
         return False, f"Some alphabets are empty"
 
   if lexemObjects[0].sigma & lexemObjects[1].sigma:
@@ -146,10 +146,10 @@ def checkCorrection(lexemObjects):
         secondLetter = getLastLetter(lexem.regStr, alphabetBF)
         alphabetBF = alphabetBF - {firstLetter, secondLetter}
         alphabetRegex = alphabetRegex - {firstLetter, secondLetter}
-  for lex in lexemObjects:
-    print(lex.name, lex.sigma, lex.regStr)
+  #for lex in lexemObjects:
+  #  print(lex.name, lex.sigma, lex.regStr)
   while True:
-    print("altern brackets:")
+    #print("altern brackets:")
     fl = True
     for i in range(6, len(lexemObjects)):
         if not fl:
@@ -189,44 +189,51 @@ def checkCorrection(lexemObjects):
 
 # {lexem : ['reg', sigma], ..}
 
-lexemObjects = [
-  Lexema('eol'),
-  Lexema('blank'),
-  Lexema('equal'),
-  Lexema('sep'),
-  Lexema('const'),
-  Lexema('var'),
-  Lexema('lbr-1'),
-  Lexema('lbr-2'),
-  Lexema('lbr-3'),
-  Lexema('rbr-1'),
-  Lexema('rbr-2'),
-  Lexema('rbr-3')
-]
+def generateLexems():
+  global alphabetBF, alphabetRegex
+  lexemObjects = [
+    Lexema('eol'),
+    Lexema('blank'),
+    Lexema('equal'),
+    Lexema('sep'),
+    Lexema('const'),
+    Lexema('var'),
+    Lexema('lbr-1'),
+    Lexema('lbr-2'),
+    Lexema('lbr-3'),
+    Lexema('rbr-1'),
+    Lexema('rbr-2'),
+    Lexema('rbr-3')
+  ]
 
 
-start = time()
-print("starting...")
-e, lexemObjects = generateRandomRegex(lexemObjects, alphabetBF, alphabetRegex)
-
-#print(lexemObjects)
-fl, mes = checkCorrection(lexemObjects)
-
-print(fl, ': ' + mes)
-while not fl or not e:
-  alphabetBF = {'a', 'b', 'c', '0', '1', '2'}
-  alphabetRegex = {'a', 'b', 'c', '0', '1', '2', '*', '(', ')', '|'}
-
+  start = time()
+  print("Starting...\n")
+  print('Generating random lexems...\n')
   e, lexemObjects = generateRandomRegex(lexemObjects, alphabetBF, alphabetRegex)
- # for lex in lexemObjects:
-   #  print(lex.name, lex.sigma, lex.regStr)
-  if not e:
-    continue
+
+  #print(lexemObjects)
   fl, mes = checkCorrection(lexemObjects)
+
   print(fl, ': ' + mes)
-for lex in lexemObjects:
-  print(lex.name, lex.sigma, lex.regStr)
-print(time() - start)
+  while not fl or not e:
+    alphabetBF = {'a', 'b', 'c', '0', '1', '2'}
+    alphabetRegex = {'a', 'b', 'c', '0', '1', '2', '*', '(', ')', '|'}
 
-print(countChecks, countGens)
+    e, lexemObjects = generateRandomRegex(lexemObjects, alphabetBF, alphabetRegex)
+  # for lex in lexemObjects:
+    #  print(lex.name, lex.sigma, lex.regStr)
+    if not e:
+      continue
+    fl, mes = checkCorrection(lexemObjects)
+    #print(fl, ': ' + mes)
+  
+  print('Regular expressions for lexems:\n')
+  for lex in lexemObjects:
+    print(lex.name, lex.regStr)
+  print()
+  #print(time() - start)
 
+  #print(countChecks, countGens)
+
+  return lexemObjects
