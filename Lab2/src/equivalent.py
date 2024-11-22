@@ -8,18 +8,20 @@ def members(dfa, word):
     return dfa.evalWordP(word)
 
 def generateRandomWord(dfa):
-    return dfa.witness()
+    ln = random.randint(3, 50)
+    words = dfa.enumDFA(idx)
+    idx = random.randint(0, len(words))
+    return words[idx]
 
-def checkEquivalence(dfa1, dfa2):
-    if dfa1 == dfa2:
+def checkEquivalence(dfaMAT, dfaLearner):
+    if dfaMAT == dfaLearner:
         return True, ''
 
-    dfaDif = dfa1 & dfa2
+    dfaDif = dfaMAT & (~dfaLearner)
 
-    if dfaDif.isEmpty():
-        difDfa = dfa2 & dfa1
+    if dfaDif.countTransitions() == 0:
+        # dfaMAT - подавтомат dfaLearner
+        difDfa = dfa2 & (~dfa1)
         return False, generateRandomWord(difDfa)
 
     return False, generateRandomWord(dfaDif)
-
-    
