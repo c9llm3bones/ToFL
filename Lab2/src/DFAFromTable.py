@@ -59,8 +59,9 @@ table = {
     ('11', '@epsilon'): '1'
 }
 """
-prefixes = ['1c', '11', '@epsilon']
-suffixes = ['1', 'c', '1c', '@epsilon', '11']
+#prefixes = ['1c', '11', '@epsilon']
+#suffixes = ['1', 'c', '1c', '@epsilon', '11']
+"""
 table = {
     ('11', '1'): '0',
     ('11', '@epsilon'): '1',
@@ -74,8 +75,8 @@ table = {
     ('1c', 'c'): '0',
     ('@epsilon', '@epsilon'): '1'
 }
-
-dfa = makeDfaFromTableFado(prefixes, suffixes, table)
+"""
+#dfa = makeDfaFromTableFado(prefixes, suffixes, table)
 
 
 """
