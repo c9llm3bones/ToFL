@@ -1,25 +1,57 @@
 from FAdo.fa import *
+import random
+from time import time
 
 def members(dfa, word):
-    sigma = set(x for x in word)
-    if not (sigma & dfa.Sigma) or sigma - dfa.Sigma:
-       return False
-
+    sigma = set(word)
+    if not sigma.issubset(dfa.Sigma):
+        return False
     return dfa.evalWordP(word)
 
-def generateRandomWord(dfa):
-    return dfa.witness()
+def generateRandomWord(dfa, max_length=150, max_attempts=1000000):
+    print("Generating word via random walks...")
+    start = time()
+    for attempt in range(max_attempts):
+        current_state = dfa.Initial
+        word = ''
+        steps = 0
+        while steps < max_length:
+            steps += 1
+            transitions = dfa.delta[current_state]
+            if not transitions:
+                break  
+            symbol = random.choice(list(transitions.keys()))
+            current_state = transitions[symbol]
+            word += symbol
+            if current_state in dfa.Final:
+                #print(f"Generated word: {word} for {attempt+1} attempts and {time() - start} sec")
+                return word
+     
+    print("Failed to generate a word via random walks.")
+    return ''
 
-def checkEquivalence(dfa1, dfa2):
-    if dfa1 == dfa2:
+
+
+def checkEquivalenceDFA(dfaMAT, dfaLearner):
+    alphabet = set(dfaMAT.Sigma).union(set(dfaLearner.Sigma))
+    dfaMAT.Sigma = alphabet
+    dfaLearner.Sigma = alphabet
+    
+    if dfaMAT == dfaLearner:
         return True, ''
 
-    dfaDif = dfa1 & dfa2
+    
+    dfaMATComplete = dfaMAT.complete()
+    dfaLearnerComplete = dfaLearner.complete()
+    
+    dfaDif = dfaMATComplete & (~dfaLearnerComplete)
 
-    if dfaDif.isEmpty():
-        difDfa = dfa2 & dfa1
+    #dfaMAT.display()
+    #dfaLearner.display()
+    #dfaDif.display()
+    if dfaDif.countTransitions() == 0:
+        # dfaMAT - подавтомат dfaLearner
+        difDfa = dfaLearnerComplete & (~dfaMATComplete)
         return False, generateRandomWord(difDfa)
 
     return False, generateRandomWord(dfaDif)
-
-    

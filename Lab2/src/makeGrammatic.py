@@ -87,12 +87,12 @@ def generateGrammar(lexemObjects):
 
     start = time()
     grammarAutomataReg = createRuleAutomataReg(lexem_dict)
+    print(grammarAutomataReg['program'])
     print("RegExp generation time:", time() - start)
 
-    start = time()
     for automaton in grammarAutomataReg:
         grammarAutomataReg[automaton] = grammarAutomataReg[automaton].nfaPD().toDFA().minimal()
-    print("NFA to DFA conversion time:", time() - start)
+    
     print('\n')
     """
     for automaton in grammarAutomataDFA:
@@ -104,5 +104,5 @@ def generateGrammar(lexemObjects):
     for automaton in grammarAutomataReg:
         print(grammarAutomataDFA[automaton] == grammarAutomataReg[automaton])
     """
-
+    print("Automaton is ready!\nWaiting for requests...")
     return grammarAutomataDFA

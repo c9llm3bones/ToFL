@@ -21,9 +21,9 @@ class Lexema:
 
 alphabetBF = {'a', 'b', 'c', '0', '1', '2'}
 
-alphabetRegex = {'a', 'b', 'c', '0', '1', '2', '*', '(', ')'}
+alphabetRegex = {'a', 'b', 'c', '0', '1', '2', '*', '|', '(', ')'}
 
-def randomRegex(alphabetBF, alphabetRegex, min_length=10, max_length=20,):
+def randomRegex(alphabetBF, alphabetRegex, min_length=2, max_length=5,):
     if not alphabetRegex or not alphabetBF:
       return False, '', '', {}
 
@@ -31,10 +31,10 @@ def randomRegex(alphabetBF, alphabetRegex, min_length=10, max_length=20,):
         length = random.randint(min_length, max_length)
         s = ''
         curAlph = set(random.sample(list(alphabetBF), k=random.randint(1, min(len(alphabetBF), 2))))
-        if alphabetRegex == alphabetBF:
+        if alphabetRegex == alphabetBF: #если sep/equal
             alphabetRegex = curAlph  
         else:
-            alphabetRegex = curAlph | {'*', '(', ')'}
+            alphabetRegex = curAlph | {'*', '|', '(', ')'}
         for _ in range(length):
           symb = random.choice(list(alphabetRegex))
           s += symb
@@ -55,8 +55,8 @@ def generateRandomRegex(lexemRegex, alphabetBF, alphabetRegex):
     if not alphabetBF:
        return False, lexemRegex
     #print(f"generating for {lexem.name}")
-    minLenRegex = 1
-    maxLenRegex = 20
+    minLenRegex = 2 # >1
+    maxLenRegex = 3 # >= minLenRegex
     regExpr = RegExp()
     regStr = ''
     sigma = {}
@@ -64,7 +64,7 @@ def generateRandomRegex(lexemRegex, alphabetBF, alphabetRegex):
       e, regExpr, regStr, sigma = randomRegex(alphabetBF, alphabetRegex, minLenRegex, maxLenRegex)
       while len(sigma) > 2:
         e, regExpr, regStr, sigma = randomRegex(alphabetBF, alphabetRegex, minLenRegex, maxLenRegex)
-
+      #print(regExpr)
       alphabetBF = alphabetBF - sigma
       alphabetRegex = alphabetRegex - sigma
 
@@ -215,7 +215,7 @@ def generateLexems():
   #print(lexemObjects)
   fl, mes = checkCorrection(lexemObjects)
 
-  print(fl, ': ' + mes)
+  #print(fl, ': ' + mes)
   while not fl or not e:
     alphabetBF = {'a', 'b', 'c', '0', '1', '2'}
     alphabetRegex = {'a', 'b', 'c', '0', '1', '2', '*', '(', ')', '|'}
