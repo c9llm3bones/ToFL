@@ -55,3 +55,14 @@ def checkEquivalenceDFA(dfaMAT, dfaLearner):
         return False, generateRandomWord(difDfa)
 
     return False, generateRandomWord(dfaDif)
+
+from FAdo.reex import *
+
+r1 = str2regexp("a(aa)*")  # Нечётное количество символов
+r2 = str2regexp("a(aa)*")   # Чётное количество символов
+# Пересечение языков
+intersection = r1.toDFA().minimal() & (r2.toDFA().minimal())
+print(intersection.Final)
+#intersection.display()
+#r1.toDFA().minimal().display()
+#r2.toDFA().minimal().display()

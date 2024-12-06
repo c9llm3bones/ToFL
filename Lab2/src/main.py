@@ -26,9 +26,6 @@ async def checkMembership(request: MembershipRequest):
     print(f"Результат: {'да' if result else 'нет'}")
     return {"result": int(result)}
 
-
-@app.post("/checkEquivalence/")
-
 @app.post("/checkEquivalence/")
 async def checkEquivalence(request: EquivalenceRequest):
     print(f"Получена таблица эквивалентности: {request.equivalenceTable}")
