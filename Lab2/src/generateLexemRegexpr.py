@@ -40,7 +40,25 @@ def setAlphabetsLen(lexemObjects):
   for j in range(i, len(lexemObjects)):
     lexemObjects[j].sigmaLen = 1
   
-def generate_regex(alphabetBF, isFinal, AlphLen, min_length=10, max_length=100):
+def generate_recursive(current_length, alphabet, is_final):
+    if current_length <= 0:
+        return random.choice(alphabet)
+    
+    operation = random.choice(['concat', 'group'])
+    
+    if operation == 'concat':
+        part1 = generate_recursive(current_length // 2, alphabet, is_final)
+        part2 = generate_recursive(current_length // 2, alphabet, is_final)
+        return part1 + part2
+    
+    elif operation == 'group':
+        inner = generate_recursive(current_length - 2, alphabet, is_final)
+        if not is_final:
+            return f"({inner})*"
+        else:
+            return f"({inner})"
+
+def generate_regex(alphabetBF, isFinal, AlphLen, min_length=3, max_length=5):
     
   if AlphLen > len(alphabetBF) or not alphabetBF:
     return False, '', '', {}
@@ -53,35 +71,12 @@ def generate_regex(alphabetBF, isFinal, AlphLen, min_length=10, max_length=100):
           unused = [char for char in alphabet if char not in expression]
       return expression
   
-  def generate_recursive(current_length, alphabet, is_final):
-      if current_length <= 0:
-          return random.choice(alphabet)
-      
-      operation = random.choice(['concat', 'union', 'group'])
-      
-      if operation == 'concat':
-          part1 = generate_recursive(current_length // 2, alphabet, is_final)
-          part2 = generate_recursive(current_length // 2, alphabet, is_final)
-          return part1 + part2
-
-      elif operation == 'union':
-          part1 = generate_recursive(current_length // 2, alphabet, is_final)
-          part2 = generate_recursive(current_length // 2, alphabet, is_final)
-          return f"({part1}|{part2})"
-      
-      elif operation == 'group':
-          inner = generate_recursive(current_length - 2, alphabet, is_final)
-          if not is_final:
-              return f"({inner})*"
-          else:
-              return f"({inner})"
   
   regex_length = random.randint(min_length, max_length)
   
   regex = generate_recursive(regex_length, chosen_alphabet, isFinal)
   regex = ensure_all_used(regex, chosen_alphabet)
   
-    
     
   return True, str2regexp(regex), regex, set(chosen_alphabet)
 
@@ -176,26 +171,22 @@ def checkIntersection(dfa1, dfa2):
     intersection_dfa = dfa1 & dfa2
     return intersection_dfa.Final
 
-def generate_regex_br(alphabet, n, max_depth=3):
-    single_symbol = list(alphabet)[0]  
- 
-    s = ''
-    for _ in range(n):
-        insertStar = random.randint(0, 1)
-        if insertStar and max_depth:
-            s += single_symbol + '*'
-            max_depth-=1    
-        s += single_symbol
-    
-    return s
+def generate_regex_br(symb, n):
+    return symb * n
 
-def integrate_bracket_generation(lexem_objects, alphabetBF):
-    n = random.randint(1, 5)  # Случайное начальное значение 
-    for _ in range(4, len(lexem_objects)):
-        
-        reg_str= generate_regex_br(alphabetBF, n)
-        print(reg_str)
-        n=n*2 + 1
+
+def generateRegexVarConst(symbol, regStr, is_var, min_length=3, max_length=5):
+    #regex_length = random.randint(min_length, max_length)
+    #regex = regStr + generate_recursive(regex_length, list(symb), False)
+  
+    
+    if is_var:
+        regex = f"{regStr}({symbol}{symbol})*{symbol}{symbol}"
+    else:
+        regex = f"{regStr}({symbol}{symbol})*{symbol}"
+
+
+    return regex
 
 def checkCorrection(lexemObjects):
   global countChecks, alphabetBF, alphabetRegex
@@ -229,53 +220,21 @@ def checkCorrection(lexemObjects):
         alphabetRegex = alphabetRegex - {firstLetter, secondLetter}
   #for lex in lexemObjects:
   #  print(lex.name, lex.sigma, lex.regStr)
-  n = 3
+  n = 1
   for i in range(6, len(lexemObjects)):
-    lexemObjects[i].regStr= generate_regex_br(alphabetBF, n)
+    lexemObjects[i].regStr = generate_regex_br(list(alphabetBF)[0], n)
     lexemObjects[i].regExpr = str2regexp(lexemObjects[i].regStr)
     lexemObjects[i].dfa = lexemObjects[i].regExpr.toDFA()
-    print(lexemObjects[i].regStr)
+    #print(lexemObjects[i].regStr)
     n = n*2 + 1
-    
-  print(alphabetBF)
-  while True:
-    print("altern brackets:")
-    fl = True
-    for i in range(6, len(lexemObjects)):
-        if not fl:
-          break
-        for j in range(i + 1, len(lexemObjects)):
-            if not fl:
-               break
-            if checkIntersection(lexemObjects[i].dfa, lexemObjects[j].dfa):
-                fl = False
-                for i in range(6, len(lexemObjects)):
-                    #e, lexemObjects[i].regExpr, lexemObjects[i].regStr, lexemObjects[i].sigma = generate_regex(alphabetBF, False, lexemObjects[i].sigmaLen)
-                    
-                    #lexemObjects[i].dfa = lexemObjects[i].regExpr.toDFA()
-                    print(False, f"Languages for {lexemObjects[i].name} and {lexemObjects[j].name} have non-zero intersection")
-                    print(lexemObjects[i].regStr, lexemObjects[j].regStr)
-    print('brackets do not intersect')
-    return
-    for i in range(6, len(lexemObjects)):
-        if not fl:
-          break
-        for j in range(i + 1, len(lexemObjects)):
-            if not fl:
-              break
-            combinedDFA = lexemObjects[i].dfa.concat(lexemObjects[j].dfa)
-            for k in range(6, len(lexemObjects)):
-                if not fl:
-                  break
-                if checkIntersection(lexemObjects[k].dfa, combinedDFA):
-                    fl = False
-                    for i in range(6, len(lexemObjects)):
-                        e, lexemObjects[i].regExpr, lexemObjects[i].regStr, lexemObjects[i].sigma = generate_regex(alphabetBF, alphabetRegex)
-                        lexemObjects[i].dfa = lexemObjects[i].regExpr.toDFA()
-                        print(False, f"Concatenated languages for {lexemObjects[i].name} and {lexemObjects[j].name} should not intersect any single bracket language.")
-                
-    if fl:
-      break
+  
+  lexemObjects[4].setRegex(generateRegexVarConst(list(alphabetBF)[0], lexemObjects[-1].regStr, False), alphabetBF) 
+  lexemObjects[5].setRegex(generateRegexVarConst(list(alphabetBF)[0], lexemObjects[-1].regStr, True), alphabetBF)
+  
+  #print(lexemObjects[4].regStr)
+  #print(lexemObjects[5].regStr)
+  #print(alphabetBF)
+
   return True, ""
 
 # {lexem : ['reg', sigma], ..}
@@ -302,22 +261,22 @@ def generateLexems():
   print("Starting...\n")
   print('Generating random lexems...\n')
   setAlphabetsLen(lexemObjects)
-  for lexem in lexemObjects:
-    print(lexem.name, ' ', lexem.sigmaLen)
+  #for lexem in lexemObjects:
+  #  print(lexem.name, ' ', lexem.sigmaLen)
   
   
   e, lexemObjects = generateRandomRegex(lexemObjects, alphabetBF, alphabetRegex)
   
-  for lexem in lexemObjects:
-    print(lexem.name, lexem.regExpr, lexem.sigmaLen, lexem.sigma)
-  lexemObjects[0].regExpr.toDFA().display()
+  #for lexem in lexemObjects:
+  #  print(lexem.name, lexem.regExpr, lexem.sigmaLen, lexem.sigma)
+  #lexemObjects[0].regExpr.toDFA().display()
   
   #print(lexemObjects)
-  print(checkIntersection(lexemObjects[4].regExpr.toDFA(), lexemObjects[5].regExpr.toDFA()))
+  #print(checkIntersection(lexemObjects[4].regExpr.toDFA(), lexemObjects[5].regExpr.toDFA()))
   
   fl, mes = checkCorrection(lexemObjects)
-  exit(0)
-  print(fl, ': ' + mes)
+  
+  #print(fl, ': ' + mes)
   
   while not fl or not e:
     alphabetBF = {'a', 'b', 'c', '0', '1', '2'}

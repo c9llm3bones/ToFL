@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from DFAFromTable import makeDfaFromTableFado  
 from equivalent import *
-from generateLexemDFA import generateLexems
+from generateLexemRegexpr import generateLexems
 from makeGrammatic import generateGrammar
 import uvicorn
 

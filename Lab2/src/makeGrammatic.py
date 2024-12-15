@@ -8,8 +8,8 @@ from equivalent import checkEquivalenceDFA, generateRandomWord, members
 
 def generateGrammar(lexemObjects):
     for lexem in lexemObjects:
-        #lexem.setRegex(lexem.regStr, lexem.sigma)
-        #lexem.regExpr.reduced()
+        lexem.setRegex(lexem.regStr, lexem.sigma)
+        lexem.regExpr.reduced()
         lexem.dfa = lexem.dfa.toDFA().minimal()
     
     lexem_dict = {lex.name: lex for lex in lexemObjects}
@@ -124,17 +124,17 @@ def generateGrammar(lexemObjects):
         return grammar_automata
 
     start = time()
-    grammarAutomataDFA = createRuleAutomataDFA(lexem_dict)
+    #grammarAutomataDFA = createRuleAutomataDFA(lexem_dict)
     print("DFA generation time:", time() - start)
 
     start = time()
-    #grammarAutomataReg = createRuleAutomataReg(lexem_dict)
+    grammarAutomataReg = createRuleAutomataReg(lexem_dict)
     #print(grammarAutomataReg['program'])
     #print("RegExp generation time:", time() - start)
     #grammarAutomataDFANoMin = createRuleAutomataNoMin(lexem_dict)
     
-    #for automaton in grammarAutomataReg:
-    #    grammarAutomataReg[automaton] = grammarAutomataReg[automaton].nfaPD().toDFA().minimal()
+    for automaton in grammarAutomataReg:
+        grammarAutomataReg[automaton] = grammarAutomataReg[automaton].nfaPD().toDFA().minimal()
     
     #print(checkEquivalenceDFA(grammarAutomataDFA, grammarAutomataDFANoMin))
     
@@ -150,4 +150,4 @@ def generateGrammar(lexemObjects):
         print(grammarAutomataDFA[automaton] == grammarAutomataReg[automaton])
     """
     print("Automaton is ready!\nWaiting for requests...")
-    return grammarAutomataDFA
+    return grammarAutomataReg
