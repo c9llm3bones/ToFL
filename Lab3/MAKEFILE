@@ -3,17 +3,34 @@ CXXFLAGS = -std=c++17 -Iinclude -Wall -Wextra
 SRC_DIR = src
 INC_DIR = include
 OBJ_DIR = obj
+GEN_DIR = generate
 
-OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/Grammatic.o
+# Список всех объектных файлов
+OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/Grammatic.o \
+       $(OBJ_DIR)/LongRules.o $(OBJ_DIR)/EpsilonRules.o \
+       $(OBJ_DIR)/ChainRules.o $(OBJ_DIR)/NonGeneratingRules.o \
+       $(OBJ_DIR)/UnreachableRules.o $(OBJ_DIR)/ReplaceTerminals.o \
+       $(OBJ_DIR)/BuildBigrams.o $(OBJ_DIR)/GenerateWords.o \
+       $(OBJ_DIR)/CYK.o
 
 all: main
 
+# Цель для сборки исполняемого файла
 main: $(OBJS)
 	$(CXX) $(CXXFLAGS) -o main $(OBJS)
 
+# Правило для сборки объектных файлов из исходных
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	mkdir -p $(OBJ_DIR)
+	if not exist $(OBJ_DIR) mkdir $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Правило для сборки объектных файлов из generate/
+$(OBJ_DIR)/%.o: $(GEN_DIR)/%.cpp
+	if not exist $(OBJ_DIR) mkdir $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Очистка
 clean:
-	rm -rf $(OBJ_DIR) main
+	del /q /s $(OBJ_DIR)\*.o
+	rmdir /q /s $(OBJ_DIR)
+	del /q main.exe

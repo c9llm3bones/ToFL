@@ -180,9 +180,9 @@ void build_bigrams(
     for (auto &A1 : G.Nonterms) {
          auto &lastSet = LAST.at(A1);
          auto &followSet = FOLLOW.at(A1);
-        for (auto &γ1 : lastSet) {
-            for (auto &γ2 : followSet) {
-                allowedBigrams[γ1].insert(γ2);
+        for (auto &gam1 : lastSet) {
+            for (auto &gam2 : followSet) {
+                allowedBigrams[gam1].insert(gam2);
             }
         }
     }
@@ -190,9 +190,9 @@ void build_bigrams(
     for (auto &A2 : G.Nonterms) {
          auto &precedeSet = PRECEDE.at(A2);
          auto &firstSet = FIRST.at(A2);
-        for (auto &γ1 : precedeSet) {
-            for (auto &γ2 : firstSet) {
-                allowedBigrams[γ1].insert(γ2);
+        for (auto &gam1 : precedeSet) {
+            for (auto &gam2 : firstSet) {
+                allowedBigrams[gam1].insert(gam2);
             }
         }
     }
@@ -202,10 +202,10 @@ void build_bigrams(
          auto &followSet = FOLLOW.at(A1);
         for (auto &A2 : G.Nonterms) {
              auto &firstSet = FIRST.at(A2);
-            for (auto &γ1 : lastSet) {
-                for (auto &γ2 : firstSet) {
-                    if (followSet.find(γ2) != followSet.end()) {
-                        allowedBigrams[γ1].insert(γ2);
+            for (auto &gam1 : lastSet) {
+                for (auto &gam2 : firstSet) {
+                    if (followSet.find(gam2) != followSet.end()) {
+                        allowedBigrams[gam1].insert(gam2);
                     }
                 }
             }
