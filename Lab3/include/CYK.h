@@ -11,6 +11,6 @@
 #include "Grammatic.h"
 
 
-bool cyk(const Grammatic &G, const string &w);
+bool cyk(Grammatic &G, string &w);
 
 #endif // CYK_H

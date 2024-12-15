@@ -9,10 +9,8 @@ void remove_unreachable(Grammatic &G) {
     bool changed = true;
     while (changed) {
         changed = false;
-        // Просматриваем все правила
         for (auto &r : G.Rules) {
             const string &A = r.first;
-            // Если A достижим
             if (reachable.find(A) != reachable.end()) {
                 for (auto &alt : r.second) {
                     for (auto &sym : alt) {
