@@ -1,6 +1,7 @@
 from FAdo.fa import *
 import random
 from time import time
+from FAdo.reex import *
 
 def members(dfa, word):
     sigma = set(word)
@@ -30,8 +31,6 @@ def generateRandomWord(dfa, max_length=150, max_attempts=1000000):
     print("Failed to generate a word via random walks.")
     return ''
 
-
-
 def checkEquivalenceDFA(dfaMAT, dfaLearner):
     alphabet = set(dfaMAT.Sigma).union(set(dfaLearner.Sigma))
     dfaMAT.Sigma = alphabet
@@ -56,11 +55,9 @@ def checkEquivalenceDFA(dfaMAT, dfaLearner):
 
     return False, generateRandomWord(dfaDif)
 
-from FAdo.reex import *
 
-r1 = str2regexp("a(aa)*")  # Нечётное количество символов
-r2 = str2regexp("a(aa)*")   # Чётное количество символов
-# Пересечение языков
+r1 = str2regexp("a(aa)*")  
+r2 = str2regexp("a(aa)*")  
 intersection = r1.toDFA().minimal() & (r2.toDFA().minimal())
 print(intersection.Final)
 #intersection.display()

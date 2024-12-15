@@ -1,5 +1,5 @@
-#ifndef LONGRULES_H
-#define LONGRULES_H
+#ifndef CYK_H
+#define CYK_H
 
 #include <iostream>
 #include <string>
@@ -10,6 +10,7 @@
 #include <algorithm>
 #include "Grammatic.h"
 
-void remove_long_rules(Grammatic &G);
 
-#endif // LONGRULES_H
+bool cyk(const Grammatic &G, const string &w);
+
+#endif // CYK_H

@@ -44,10 +44,8 @@ def generate_regex(alphabetBF, isFinal, AlphLen, min_length=10, max_length=100):
     
   if AlphLen > len(alphabetBF) or not alphabetBF:
     return False, '', '', {}
-  # Выбор случайного подмножества алфавита
   chosen_alphabet = random.sample(list(alphabetBF), AlphLen)
   
-  # Проверка, что все символы из выбранного алфавита будут задействованы
   def ensure_all_used(expression, alphabet):
       unused = [char for char in alphabet if char not in expression]
       while unused:
@@ -55,12 +53,10 @@ def generate_regex(alphabetBF, isFinal, AlphLen, min_length=10, max_length=100):
           unused = [char for char in alphabet if char not in expression]
       return expression
   
-  # Рекурсивная генерация регулярного выражения
   def generate_recursive(current_length, alphabet, is_final):
       if current_length <= 0:
           return random.choice(alphabet)
       
-      # Выбор операции
       operation = random.choice(['concat', 'union', 'group'])
       
       if operation == 'concat':
@@ -80,10 +76,8 @@ def generate_regex(alphabetBF, isFinal, AlphLen, min_length=10, max_length=100):
           else:
               return f"({inner})"
   
-  # Определяем длину выражения
   regex_length = random.randint(min_length, max_length)
   
-  # Генерация выражения
   regex = generate_recursive(regex_length, chosen_alphabet, isFinal)
   regex = ensure_all_used(regex, chosen_alphabet)
   

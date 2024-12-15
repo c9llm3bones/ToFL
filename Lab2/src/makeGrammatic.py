@@ -2,13 +2,15 @@ import random
 from FAdo.fa import *
 from FAdo.reex import *
 from time import time
-import generateLexem
+import generateLexemRegexpr
+from equivalent import checkEquivalenceDFA, generateRandomWord, members
+
 
 def generateGrammar(lexemObjects):
     for lexem in lexemObjects:
-        lexem.setRegex(lexem.regStr, lexem.sigma)
-        lexem.regExpr.reduced()
-        lexem.dfa.minimal()
+        #lexem.setRegex(lexem.regStr, lexem.sigma)
+        #lexem.regExpr.reduced()
+        lexem.dfa = lexem.dfa.toDFA().minimal()
     
     lexem_dict = {lex.name: lex for lex in lexemObjects}
     grammar_automata = {}
@@ -54,6 +56,46 @@ def generateGrammar(lexemObjects):
 
         return grammar_automata
 
+    def createRuleAutomataNoMin(lexem_dict):
+        # pattern
+        pattern_dfa = lexem_dict["var"].dfa.union(
+            lexem_dict["const"].dfa)
+
+        grammar_automata["pattern"] = pattern_dfa.union(
+            lexem_dict["lbr-3"].dfa.concat(pattern_dfa).concat(lexem_dict["rbr-3"].dfa).union(
+                pattern_dfa.concat(lexem_dict["blank"].dfa).concat(pattern_dfa)
+            )
+        )
+
+        # expression
+        expression_dfa = lexem_dict["var"].dfa.union(
+            lexem_dict["const"].dfa)
+
+        grammar_automata["expression"] = expression_dfa.union(
+            expression_dfa.concat(lexem_dict["blank"].dfa).concat(expression_dfa)).union(
+                lexem_dict["lbr-3"].dfa.concat(expression_dfa).concat(lexem_dict["rbr-3"].dfa)).union(
+                    lexem_dict["lbr-2"].dfa.concat(lexem_dict["const"].dfa).concat(lexem_dict["blank"].dfa).concat(
+                        expression_dfa).concat(lexem_dict["rbr-2"].dfa)
+        )
+
+        # sentence
+        grammar_automata["sentence"] = grammar_automata["pattern"].concat(
+            lexem_dict["equal"].dfa).concat(grammar_automata["expression"]).concat(
+                lexem_dict["sep"].dfa)
+
+        # definition
+        grammar_automata["definition"] = lexem_dict["const"].dfa.concat(
+            lexem_dict["lbr-1"].dfa).concat(
+                lexem_dict["eol"].dfa.star().concat(grammar_automata["sentence"]).star()).concat(
+                    lexem_dict["eol"].dfa.star()).concat(lexem_dict["rbr-1"].dfa)
+        
+        # program
+        grammar_automata["program"] = lexem_dict["eol"].dfa.star().concat(
+            grammar_automata["definition"].concat(lexem_dict["eol"].dfa.plus()).plus()
+        )
+
+        return grammar_automata
+    
     def createRuleAutomataReg(lexem_dict):
         grammar_automata = {}
 
@@ -86,12 +128,15 @@ def generateGrammar(lexemObjects):
     print("DFA generation time:", time() - start)
 
     start = time()
-    grammarAutomataReg = createRuleAutomataReg(lexem_dict)
-    print(grammarAutomataReg['program'])
-    print("RegExp generation time:", time() - start)
-
-    for automaton in grammarAutomataReg:
-        grammarAutomataReg[automaton] = grammarAutomataReg[automaton].nfaPD().toDFA().minimal()
+    #grammarAutomataReg = createRuleAutomataReg(lexem_dict)
+    #print(grammarAutomataReg['program'])
+    #print("RegExp generation time:", time() - start)
+    #grammarAutomataDFANoMin = createRuleAutomataNoMin(lexem_dict)
+    
+    #for automaton in grammarAutomataReg:
+    #    grammarAutomataReg[automaton] = grammarAutomataReg[automaton].nfaPD().toDFA().minimal()
+    
+    #print(checkEquivalenceDFA(grammarAutomataDFA, grammarAutomataDFANoMin))
     
     print('\n')
     """

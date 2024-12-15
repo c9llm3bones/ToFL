@@ -11,6 +11,15 @@ using namespace std;
 */
 
 void Grammatic::print() const {
+    /*
+    for (const auto N : Nonterms) {
+        cout << N << ' ';
+    }
+    cout << endl;
+    for (const auto T : Terms) {
+        cout << T << ' ';
+    }
+    */
     for (const auto &rule : Rules) {
         for (const auto &alt : rule.second) {
             cout << rule.first << " -> ";

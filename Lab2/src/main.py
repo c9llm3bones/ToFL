@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from DFAFromTable import makeDfaFromTableFado  
 from equivalent import *
-from generateLexem import generateLexems
+from generateLexemDFA import generateLexems
 from makeGrammatic import generateGrammar
 import uvicorn
 
@@ -50,7 +50,7 @@ async def checkEquivalence(request: EquivalenceRequest):
     print(f"Суффиксы: {suffixes}")
 
     learnerDFA = makeDfaFromTableFado(mainPrefixes, list(suffixes), reconstructed_table)
-    print("Построен DFA для обучающегося.")
+    print("Построен DFA для лернера.")
 
     areEquivalent, counterexample = checkEquivalenceDFA(programDFA, learnerDFA)
     if areEquivalent:
@@ -62,6 +62,6 @@ async def checkEquivalence(request: EquivalenceRequest):
 
 
 if __name__ == "__main__":
-    programDFA.display()
+    #programDFA.display()
     #generateRandomWord(programDFA)
     uvicorn.run(app, host="0.0.0.0", port=8000)
