@@ -18,12 +18,14 @@ print("Choose generation method:")
 print("1. DFA-based generation")
 print("2. Regular expression-based generation")
 
-choice = input("Enter your choice (1 or 2): ") 
+choice = input("Enter your choice (1, 2, 3): ") 
 
 if choice == "1":
     lexemObjects = generateLexemDFA.generateLexems()
 elif choice == "2":
     lexemObjects = test.generateLexems()
+elif choice == "3":
+    lexemObjects = generateLexemRegexpr.generateLexems()
 else:
     print("Invalid choice. Using DFA-based generation by default.")
     lexemObjects = generateLexemDFA.generateLexems()

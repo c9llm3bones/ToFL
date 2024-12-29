@@ -125,7 +125,7 @@ class LearnerBrainfuckRefal:
 
 start = time()
 teacher = MATAPI(base_url="http://127.0.0.1:8000")
-learner = LearnerBrainfuckRefal(teacher, max_iterations=10)
+learner = LearnerBrainfuckRefal(teacher, max_iterations=100)
 final_hypothesis = learner.learn_language()
 print("\nРезультат:\n", final_hypothesis)
 print(time() - start)

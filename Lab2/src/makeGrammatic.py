@@ -82,7 +82,7 @@ def generateGrammar(lexemObjects, option):
 
     start = time()
     print(option)
-    if int(option) == 2:
+    if int(option) == 2 or int(option) == 3:
         print("Using Regular Expression based generation...")
         for lexem in lexemObjects:
             lexem.setRegex(lexem.regStr, lexem.sigma)
