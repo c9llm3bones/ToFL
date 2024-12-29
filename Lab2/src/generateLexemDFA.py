@@ -131,27 +131,7 @@ def generate_infinite_automaton(alphabet, min_states=3, max_states=10):
 
 def generateSigma(ln, alphabet):
     return list(random.sample(list(alphabet), k=ln))
-    if len(alphabet) == 0 or num_states < 2:
-        raise ValueError("")
-
-    automaton = DFA()
-    automaton.setSigma(set(alphabet))
-
-    states = [automaton.addState() for _ in range(num_states)]
-    automaton.setInitial(states[0])
-
-    for i in range(num_states - 1):
-        symbol = random.choice(alphabet)
-        automaton.addTransition(states[i], symbol, states[i + 1])
-
-    automaton.addFinal(states[-1])
-
-    if is_cyclic:
-        symbol = random.choice(alphabet)
-        automaton.addTransition(states[-1], symbol, states[0])
-
-    automaton.minimal()
-    return automaton
+    
 
 def generate_lexeme_automaton_with_dfs(alphabet, num_states, is_finite=True):
     if len(alphabet) == 0 or num_states < 2:
@@ -284,7 +264,7 @@ def generateAutomatas(lexemObjects, alphabetBF):
         if not alphabetBF:
             return False, lexemObjects
         minStates = 5
-        maxStates = 10
+        maxStates = 15
         
         if lexem.name in ('eol', 'blank'):
             lexem.sigma = generateSigma(lexem.sigmaLen, alphabetBF)

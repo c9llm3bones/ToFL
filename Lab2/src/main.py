@@ -1,17 +1,40 @@
+from DFAFromTable import makeDfaFromTableFado  
+from equivalent import *
+import generateLexemDFA
+import generateLexemRegexpr
+import test
+from makeGrammatic import generateGrammar
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from DFAFromTable import makeDfaFromTableFado  
 from equivalent import *
-from generateLexemRegexpr import generateLexems
+from generateLexemDFA import generateLexems
+from test import generateRandomRegex
 from makeGrammatic import generateGrammar
 import uvicorn
 
+
+print("Choose generation method:")
+print("1. DFA-based generation")
+print("2. Regular expression-based generation")
+
+choice = input("Enter your choice (1 or 2): ") 
+
+if choice == "1":
+    lexemObjects = generateLexemDFA.generateLexems()
+elif choice == "2":
+    lexemObjects = test.generateLexems()
+else:
+    print("Invalid choice. Using DFA-based generation by default.")
+    lexemObjects = generateLexemDFA.generateLexems()
+
+grammar = generateGrammar(lexemObjects, choice)
+programDFA = grammar['program']
+
+#programDFA.display()
+#generateRandomWord(programDFA)
+
 app = FastAPI()
-
-lexemObjects = generateLexems()
-grammar = generateGrammar(lexemObjects)
-
-programDFA = grammar['pattern']
 
 class MembershipRequest(BaseModel):
     inputString: str
@@ -64,4 +87,5 @@ async def checkEquivalence(request: EquivalenceRequest):
 if __name__ == "__main__":
     #programDFA.display()
     #generateRandomWord(programDFA)
+    
     uvicorn.run(app, host="0.0.0.0", port=8000)

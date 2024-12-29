@@ -35,7 +35,7 @@ def setAlphabetsLen(lexemObjects):
     i += 1
   
   if not hasTwo:
-    lexemObjects[random.randint(0, 3)].sigmaLen = 2
+    lexemObjects[random.randint(0, 7)].sigmaLen = 2
     
   for j in range(i, len(lexemObjects)):
     lexemObjects[j].sigmaLen = 1
@@ -58,7 +58,7 @@ def generate_recursive(current_length, alphabet, is_final):
         else:
             return f"({inner})"
 
-def generate_regex(alphabetBF, isFinal, AlphLen, min_length=3, max_length=5):
+def generate_regex(alphabetBF, isFinal, AlphLen, min_length=3, max_length=100):
     
   if AlphLen > len(alphabetBF) or not alphabetBF:
     return False, '', '', {}
@@ -76,8 +76,7 @@ def generate_regex(alphabetBF, isFinal, AlphLen, min_length=3, max_length=5):
   
   regex = generate_recursive(regex_length, chosen_alphabet, isFinal)
   regex = ensure_all_used(regex, chosen_alphabet)
-  
-    
+      
   return True, str2regexp(regex), regex, set(chosen_alphabet)
 
 def randomRegex(alphabetBF, isFinal, AlphLen, min_length=20, max_length=50,):

@@ -1,0 +1,18 @@
+# Missing arrow
+S a b c
+
+# Empty right-hand side
+A ->
+
+# Invalid separator
+B -> a b % c d
+
+# Multiple arrows
+C -> a -> b
+
+# Empty alternative
+D -> a | | b
+
+# No start symbol
+X -> a b
+Y -> c d

@@ -13,7 +13,7 @@ public:
     set<string> Nonterms;
     set<string> Terms;
     unordered_map<string, vector<vector<string>>> Rules; // N -> list(alternative_1, ... alternative_n)
-    string Start;
+    string Start = "S";
 
     //Grammatic(); // Конструктор
     void print() const; 

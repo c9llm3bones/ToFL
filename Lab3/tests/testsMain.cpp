@@ -50,63 +50,55 @@ void test_cyk() {
     cout << "Test CYK passed!" << endl;
 }
 
-//дорабатывается 
-Grammatic loadGrammarFromFile(const string &filename) {
+Grammatic readGrammarFromFile(const string& filename) {
     Grammatic G;
     ifstream file(filename);
 
     if (!file.is_open()) {
-        throw runtime_error("Failed to open file: " + filename);
+        throw runtime_error("Не удалось открыть файл: " + filename);
     }
-
-    getline(file, G.Start);
-
-    int numNonterms;
-    file >> numNonterms;
-    file.ignore(); 
 
     string line;
-    getline(file, line);
-    istringstream nontermsStream(line);
-    for (int i = 0; i < numNonterms; ++i) {
-        string nonterm;
-        nontermsStream >> nonterm;
-        G.Nonterms.insert(nonterm);
-    }
-    for (const auto N : G.Nonterms) {
-        cout << N << ' ';
-    }
+    while (getline(file, line)) {
+        if (line.empty()) continue; 
 
-    int numTerms;
-    file >> numTerms;
-    file.ignore(); 
+        istringstream iss(line);
+        string lhs;       
+        string arrow;     
+        string token;     
 
-    getline(file, line);
-    istringstream termsStream(line);
-    for (int i = 0; i < numTerms; ++i) {
-        string term;
-        termsStream >> term;
-        G.Terms.insert(term);
-    }
+        iss >> lhs >> arrow; 
 
-    int numRules;
-    file >> numRules;
-    file.ignore(); 
-
-    for (int i = 0; i < numRules; ++i) {
-        getline(file, line);
-        istringstream ruleStream(line);
-
-        string left;
-        ruleStream >> left;
-
-        vector<string> right;
-        string sym;
-        while (ruleStream >> sym) {
-            right.push_back(sym);
+        if (arrow != "->") {
+            throw runtime_error("Ошибка формата в строке: " + line);
         }
 
-        G.Rules[left].push_back(right);
+        G.Nonterms.insert(lhs); 
+
+        vector<string> currentAlternative;
+        while (iss >> token) {
+            if (token == "|") {
+                
+                G.Rules[lhs].push_back(currentAlternative);
+                currentAlternative.clear();
+            } else {
+                currentAlternative.push_back(token);
+            }
+        }
+
+        if (!currentAlternative.empty()) {
+            G.Rules[lhs].push_back(currentAlternative);
+        }
+    }
+
+    for (const auto& [nonTerminal, alternatives] : G.Rules) {
+        for (const auto& alternative : alternatives) {
+            for (const auto& symbol : alternative) {
+                if (G.Nonterms.find(symbol) == G.Nonterms.end()) {
+                    G.Terms.insert(symbol);
+                }
+            }
+        }
     }
 
     file.close();
@@ -121,7 +113,16 @@ int main() {
 
     cout << "All tests passed!" << endl;
     
-    
+    try {
+        string filename = "tests/grammar.txt";
+
+        Grammatic G = readGrammarFromFile(filename);
+
+        G.print();
+    } catch (const exception& e) {
+        cerr << "Ошибка: " << e.what() << endl;
+    }
+
     return 0;
 }
 
@@ -130,7 +131,7 @@ int main() {
     
 
     try {
-        Grammatic G = loadGrammarFromFile("tests/grammar.txt");
+        Grammatic G = loadGFromFile("tests/G.txt");
         //G.print();
 
     } catch (const exception &e) {

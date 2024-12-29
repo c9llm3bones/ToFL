@@ -42,7 +42,7 @@ def makeDfaFromTableFado(prefixes, suffixes, table):
     print("Переходы:", transitions)
     print("Конечные состояния:", finalStates)
     print("Начальное состояние:", initialState)
-    dfa.display()
+    #dfa.display()
     return dfa.minimal()
 
 
