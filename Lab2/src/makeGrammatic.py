@@ -88,7 +88,7 @@ def generateGrammar(lexemObjects, option):
             lexem.setRegex(lexem.regStr, lexem.sigma)
             lexem.regExpr.reduced()
             lexem.dfa = lexem.dfa.toDFA().minimal()
-            lexem.dfa.display()
+            #lexem.dfa.display()
         grammar_automata = createRuleAutomataReg(lexem_dict)
         print("RegExp generation time:", time() - start)
         # Convert regex to DFA for consistency
@@ -98,7 +98,7 @@ def generateGrammar(lexemObjects, option):
         print("Using DFA based generation...")
         for lexem in lexemObjects:
             lexem.dfa = lexem.dfa.toDFA().minimal()
-            lexem.dfa.display()
+            #lexem.dfa.display()
         grammar_automata = createRuleAutomataDFA(lexem_dict)
         print("DFA generation time:", time() - start)
 

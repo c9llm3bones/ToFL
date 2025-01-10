@@ -5,7 +5,7 @@ from time import time
 
 # Constants
 MIN_REGEX_LENGTH = 5
-MAX_REGEX_LENGTH = 20
+MAX_REGEX_LENGTH = 10
 
 countGens, countChecks = 0, 0
 
@@ -92,9 +92,13 @@ def generateRandomRegex(lexemRegex, alphabetBF, alphabetRegex):
         elif lexem.name in ('var'):
             e, regExpr, regStr, sigma = randomRegex(alphabetBF, alphabetRegex, MIN_REGEX_LENGTH, MAX_REGEX_LENGTH)
             
-            while (regStr.count('*') == 0 and len(sigma) > 2) or checkIntersection(regExpr.toDFA(), lexemObjects[4].regExpr.toDFA()):
+            while lexemObjects[4].regStr.count('*') == 0 or regStr.count('*') == 0 or len(sigma) > 2 or checkIntersection(lexemObjects[4].regExpr.toDFA(), regExpr.toDFA()):
+                countGens += 1
+                #print(regExpr, '||',lexemObjects[4].regExpr) 
                 e, regExpr, regStr, sigma = randomRegex(alphabetBF, alphabetRegex, MIN_REGEX_LENGTH, MAX_REGEX_LENGTH) 
                 e, lexemObjects[4].regExpr, lexemObjects[4].regStr, lexemObjects[4].sigma = randomRegex(alphabetBF, alphabetRegex, MIN_REGEX_LENGTH, MAX_REGEX_LENGTH)
+                if countGens % 100 == 0:
+                    return False, lexemRegex
         
         else:
             e, regExpr, regStr, sigma = randomRegex(alphabetBF, alphabetRegex, MIN_REGEX_LENGTH, MAX_REGEX_LENGTH)
@@ -160,6 +164,9 @@ def checkCorrection(lexemObjects):
     #for lex in lexemObjects:
     #    print(lex.name, lex.sigma, lex.regStr)
     while True:
+        countChecks += 1
+        if countChecks % 100 == 0:
+            return False, "Too many checks"
         #print("altern brackets:")
         fl = True
         for i in range(6, len(lexemObjects)):
@@ -191,7 +198,13 @@ def checkCorrection(lexemObjects):
                         for i in range(6, len(lexemObjects)):
                             e, lexemObjects[i].regExpr, lexemObjects[i].regStr, lexemObjects[i].sigma = randomRegex(alphabetBF, alphabetRegex)
                             lexemObjects[i].dfa = lexemObjects[i].regExpr.toDFA()
-            
+            for i in range(6, len(lexemObjects)):
+                lexemObjects[i].dfa = lexemObjects[i].regExpr.toDFA()
+                if checkIntersection(lexemObjects[i].dfa, lexemObjects[4].regExpr.toDFA()) or checkIntersection(lexemObjects[i].dfa, lexemObjects[5].regExpr.toDFA()):
+                    #fl = False
+                    return False, "INTERSECTION FOR br and var, const"
+                
+
         if fl:
             break
   
@@ -251,3 +264,5 @@ def generateLexems():
   print(checkIntersection(lexemObjects[4].regExpr.toDFA(), lexemObjects[5].regExpr.toDFA()))
 
   return lexemObjects
+
+#lexemObjects = generateLexems()

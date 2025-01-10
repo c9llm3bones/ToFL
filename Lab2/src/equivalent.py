@@ -59,7 +59,7 @@ def checkEquivalenceDFA(dfaMAT, dfaLearner):
 r1 = str2regexp("a(aa)*")  
 r2 = str2regexp("a(aa)*")  
 intersection = r1.toDFA().minimal() & (r2.toDFA().minimal())
-print(intersection.Final)
+#print(intersection.Final)
 #intersection.display()
 #r1.toDFA().minimal().display()
 #r2.toDFA().minimal().display()

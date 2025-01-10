@@ -87,7 +87,7 @@ def randomRegex(alphabetBF, isFinal, AlphLen, min_length=20, max_length=50,):
         length = random.randint(min_length, max_length)
         s = ''
         curAlph = set(random.sample(list(alphabetBF), k=AlphLen))
-        if not isFinal: #если sep/equal
+        if not isFinal: #если const/var
             curAlph = curAlph | {'*', '|', '(', ')'}
         
         counter = set()
@@ -114,7 +114,7 @@ def generateRandomRegex(lexemRegex, alphabetBF, alphabetRegex):
     if not alphabetBF:
        return False, lexemRegex
     #print(f"generating for {lexem.name}")
-    minLenRegex = 2 # >1
+    minLenRegex = 2 # > 1
     maxLenRegex = 5 # >= minLenRegex
     regExpr = RegExp()
     regStr = ''
@@ -128,7 +128,7 @@ def generateRandomRegex(lexemRegex, alphabetBF, alphabetRegex):
       alphabetRegex = alphabetRegex - sigma
 
     elif lexem.name in ('sep', 'equal'):
-      e, regExpr, regStr, sigma = generate_regex(alphabetBF, isFinal, lexem.sigmaLen) # передаем alphabetBF = alphabetRegex, для соблюдения условия конечности языка
+      e, regExpr, regStr, sigma = generate_regex(alphabetBF, isFinal, lexem.sigmaLen) 
       
       firstLetter = getFirstLetter(regStr, alphabetBF)
       secondLetter = getLastLetter(regStr, alphabetBF)
@@ -238,24 +238,9 @@ def checkCorrection(lexemObjects):
 
 # {lexem : ['reg', sigma], ..}
 
-def generateLexems():
+def generateLexems(lexemObjects):
   global alphabetBF, alphabetRegex
-  lexemObjects = [
-    Lexema('eol'),
-    Lexema('blank'),
-    Lexema('equal'),
-    Lexema('sep'),
-    Lexema('const'),
-    Lexema('var'),
-    Lexema('lbr-1'),
-    Lexema('lbr-2'),
-    Lexema('lbr-3'),
-    Lexema('rbr-1'),
-    Lexema('rbr-2'),
-    Lexema('rbr-3')
-  ]
-
-
+  
   start = time()
   print("Starting...\n")
   print('Generating random lexems...\n')
@@ -298,3 +283,21 @@ def generateLexems():
   #print(countChecks, countGens)
 
   return lexemObjects
+
+
+lexemObjects = [
+    Lexema('eol'),
+    Lexema('blank'),
+    Lexema('equal'),
+    Lexema('sep'),
+    Lexema('const'),
+    Lexema('var'),
+    Lexema('lbr-1'),
+    Lexema('lbr-2'),
+    Lexema('lbr-3'),
+    Lexema('rbr-1'),
+    Lexema('rbr-2'),
+    Lexema('rbr-3')
+]
+
+#generateLexems(lexemObjects)

@@ -2,8 +2,10 @@ from DFAFromTable import makeDfaFromTableFado
 from equivalent import *
 import generateLexemDFA
 import generateLexemRegexpr
+import newLogic
 import test
 from makeGrammatic import generateGrammar
+from newLogic import generateLexems 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from DFAFromTable import makeDfaFromTableFado  
@@ -12,25 +14,29 @@ from generateLexemDFA import generateLexems
 from test import generateRandomRegex
 from makeGrammatic import generateGrammar
 import uvicorn
+import random
 
+lexemObjects = newLogic.generateLexems()
 
-print("Choose generation method:")
+"""print("Choose generation method:")
 print("1. DFA-based generation")
 print("2. Regular expression-based generation")
+print("3. Another Regular expression-based generation")
 
 choice = input("Enter your choice (1, 2, 3): ") 
 
 if choice == "1":
-    lexemObjects = generateLexemDFA.generateLexems()
+    lexemObjects = generateLexemDFA.generateLexems(lexemObjects)
 elif choice == "2":
-    lexemObjects = test.generateLexems()
+    lexemObjects = test.generateLexems(lexemObjects)
 elif choice == "3":
-    lexemObjects = generateLexemRegexpr.generateLexems()
+    lexemObjects = generateLexemRegexpr.generateLexems(lexemObjects)
 else:
     print("Invalid choice. Using DFA-based generation by default.")
     lexemObjects = generateLexemDFA.generateLexems()
+"""
 
-grammar = generateGrammar(lexemObjects, choice)
+grammar = generateGrammar(lexemObjects, 2)
 programDFA = grammar['program']
 
 #programDFA.display()
