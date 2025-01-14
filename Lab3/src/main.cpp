@@ -199,7 +199,7 @@ int main() {
     G.Rules["S"].push_back({"S", "t","S","t","S"});   // S → [SS1]
     G.Rules["S"].push_back({"w", "w","w","w","w"});
     */
-    string filename = "tests/simple_grammar.txt";
+    string filename = "tests/arithmetic_grammar.txt";
 
     Grammatic G = readGrammarFromFile(filename);
     
@@ -323,7 +323,7 @@ int main() {
         cout << endl;
     }
 
-    auto tests = generate_tests_bigrambased(G, 20, 0.5);
+    auto tests = generate_tests_bigrambased(G, 50, 0.5);
     for (auto &t : tests) {
         cout << (t.second ? "POS: " : "NEG: ") << t.first << "\n";
     }
