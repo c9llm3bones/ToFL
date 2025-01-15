@@ -92,8 +92,9 @@ def generateGrammar(lexemObjects, option):
         grammar_automata = createRuleAutomataReg(lexem_dict)
         print("RegExp generation time:", time() - start)
         # Convert regex to DFA for consistency
-        for automaton in grammar_automata:
-            grammar_automata[automaton] = grammar_automata[automaton].nfaPD().toDFA().minimal()
+        grammar_automata['program'] = grammar_automata['program'].nfaPD().toDFA().minimal()
+        #for automaton in grammar_automata:
+        #    grammar_automata[automaton] = grammar_automata[automaton].nfaPD().toDFA().minimal()
     else:
         print("Using DFA based generation...")
         for lexem in lexemObjects:

@@ -205,7 +205,6 @@ def distribute_and_generate(lexemObjects):
             eq_sigma = {eq_ch}
             sep_sigma = {sep_ch}
 
-        # Пример: "eq_ch + (regex over eq_sigma) + eq_ch"
         eq_reg_str  = eq_ch + generate_regex(eq_sigma, True, len(eq_sigma)) + eq_ch
         sep_reg_str = sep_ch + generate_regex(sep_sigma, True, len(sep_sigma)) + sep_ch
 
@@ -215,7 +214,6 @@ def distribute_and_generate(lexemObjects):
         used_symbols.update(eq_sigma - {mid_sym})
         used_symbols.update(sep_sigma - {mid_sym})
 
-        # "Костыль" для остальных (var, const, lbr-1, rbr-2,...)
         remain_syms = set(all_symbols) - used_symbols
         for i in range(4):
             print(lexemObjects[i].name, lexemObjects[i].sigma, lexemObjects[i].regStr)
@@ -224,7 +222,6 @@ def distribute_and_generate(lexemObjects):
         return lexemObjects
 
     else:
-        # "нет" — даём по одному символу на eol, blank
         chosen_2 = all_symbols[:2]
         all_symbols_left = all_symbols[2:]  # осталось 4
 
@@ -239,20 +236,16 @@ def distribute_and_generate(lexemObjects):
         used_symbols.update(eol_sigma)
         used_symbols.update(blank_sigma)
 
-        # Новое ветвление: "даём два символа equal/sep?"
         give_2_symbols_eq_sep = random.choice([True, False])
 
         if give_2_symbols_eq_sep:
-            # equal и sep забирают 3 символа
             eq_sep_chosen = all_symbols_left[:3]
-            leftover_after_eq_sep = all_symbols_left[3:]  # может быть 1 символ
+            leftover_after_eq_sep = all_symbols_left[3:]  
             if len(eq_sep_chosen) < 3:
-                # На всякий случай, если symbols = 2, safeguard
                 return lexemObjects
 
             symb1, symb2, symb3 = eq_sep_chosen
 
-            # Случайно решаем, кому отдать 2 символа (assign_2_to)
             assign_2_to = random.choice(["eq", "sep"])
 
             if assign_2_to == "eq":
@@ -274,7 +267,6 @@ def distribute_and_generate(lexemObjects):
 
             used_symbols.update(eq_sigma - {leftover_after_eq_sep[0]})
             used_symbols.update(sep_sigma - {leftover_after_eq_sep[0]})
-            # "Костыль" для остальных (var, const, lbr-1, rbr-2,...)
             remain_syms = set(all_symbols) - used_symbols
 
             generate_kostyl(list(remain_syms)[0], lexemObjects)
@@ -283,9 +275,8 @@ def distribute_and_generate(lexemObjects):
 
         else:
             # "equal и sep забирают 2 символа (начинаются/заканчиваются одинаковыми),
-            #  посередине 2 leftover"
             eq_sep_chosen = all_symbols_left[:2]
-            leftover_after_eq_sep = all_symbols_left[2:]  # осталось 2
+            leftover_after_eq_sep = all_symbols_left[2:]
 
             if len(eq_sep_chosen) != 2:
                 return lexemObjects
@@ -307,7 +298,7 @@ def distribute_and_generate(lexemObjects):
 
             remain_syms = list(set(all_symbols) - used_symbols)
             while True:
-                # Если не будет получаться генерировать, то поставь скобки конечными
+                # Если не будет получаться генерировать, то поставь скобки конечными 
 
                 for i in range(4, len(lexemObjects)):  # Все остальные lexemObjects:
                     lexemObjects[i].sigmaLen = random.randint(1, 2)
@@ -333,7 +324,7 @@ def distribute_and_generate(lexemObjects):
 #45 - ветка "даём 2 eol/blank?" - нет, даём 2 equal/sep - да
 #52 - ветка "даём 2 eol/blank?" - нет, даём 2 equal/sep - нет
 def generateLexems():
-    #s = 45
+    #s = 52
     #random.seed(s)  # Для воспроизводимости
     start = time()
     print('Generating random lexems...\n')
