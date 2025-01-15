@@ -51,12 +51,7 @@ class RefNode(RgNode):
 
 
 def print_ast(node, capturing_map, indent=0):
-    """
-    Рекурсивно печатает дерево с отступами.
-    capturing_map: dict[GroupNode, int] - ассоциирует захватывающую группу со своим номером.
-    indent: текущий уровень вложения (сколько пробелов слева).
-    """
-    prefix = "  " * indent  # два пробела на уровень
+    prefix = "  " * indent 
 
     if node is None:
         print(prefix + "(empty)")

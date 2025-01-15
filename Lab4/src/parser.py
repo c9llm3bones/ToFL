@@ -12,8 +12,6 @@ class Parser:
         return None
 
     def match(self, expected_type):
-        """Съедает токен ожидаемого типа и возвращает его.
-            Если тип не совпадает, бросает ошибку."""
         tk = self.current_token()
         if tk is None:
             raise ValueError("Unexpected end of token stream")
@@ -39,9 +37,6 @@ class Parser:
         return node
 
     def parseAlt(self):
-        """
-        parseAlt -> parseConcat ( '|' parseConcat )*
-        """
         left = self.parseConcat()
         while self.lookahead_type() == TokenType.ALT:
             self.match(TokenType.ALT)
@@ -50,10 +45,6 @@ class Parser:
         return left
 
     def parseConcat(self):
-        """
-        parseConcat -> parseFactor+
-        Т.е. хотя бы один factor, а затем могут идти ещё factor-ы
-        """
         factors = [self.parseFactor()]
         # Пока следующий токен не ) / | / EOF, это конкатенация
         while True:
@@ -68,9 +59,7 @@ class Parser:
         return node
 
     def parseFactor(self):
-        """
-        parseFactor -> parseBase ('*')?
-        """
+
         base_node = self.parseBase()
         if self.lookahead_type() == TokenType.STAR:
             self.match(TokenType.STAR)
@@ -79,37 +68,26 @@ class Parser:
             return base_node
 
     def parseBase(self):
-        """
-        parseBase -> 
-            LITERAL
-            | '(' parseAlt ')'             (захватывающая)
-            | '(?:' parseAlt ')'           (не захватывающая)
-            | '(?=' parseAlt ')'           (lookahead)
-            | '(?[num])'                   (ссылка на выражение)
-        """
+
         tk = self.current_token()
 
         if tk.type == TokenType.LITERAL:
-            # LITERAL
             self.match(TokenType.LITERAL)
             return LiteralNode(tk.value)
 
         elif tk.type == TokenType.LBR:
-            # '(' parseAlt ')'
-            self.match(TokenType.LBR)  # съели '('
+            self.match(TokenType.LBR)  
             child = self.parseAlt()
-            self.match(TokenType.RBR)  # съели ')'
+            self.match(TokenType.RBR)  
             return GroupNode(child, capture=True, lookahead=False)
 
         elif tk.type == TokenType.LBR_QMARK_COLON:
-            # '(?:' parseAlt ')'
             self.match(TokenType.LBR_QMARK_COLON)
             child = self.parseAlt()
             self.match(TokenType.RBR)
             return GroupNode(child, capture=False, lookahead=False)
 
         elif tk.type == TokenType.LBR_QMARK_EQUAL:
-            # '(?=' parseAlt ')'
             self.match(TokenType.LBR_QMARK_EQUAL)
             child = self.parseAlt()
             self.match(TokenType.RBR)

@@ -11,10 +11,6 @@ def check_init(
     in_progress: set[int], 
     capturing_map: dict[GroupNode, int]
 ) -> set[int]:
-    """
-    Возвращает множество групп (индексов), 
-    которые "полностью инициализированы" на выходе из узла.
-    """
     if node is None:
         return in_set
 
@@ -40,7 +36,6 @@ def check_init(
             new_in_progress = set(in_progress)
             new_in_progress.add(idx)
 
-            # Рекурсивно обходим ребёнка
             child_out = check_init(node.child, in_set, new_in_progress, capturing_map)
 
             out_set = set(child_out)
@@ -73,46 +68,30 @@ def check_init(
 
 class SemanticChecker:
     def __init__(self):
-        self.capturing_groups = []  # список GroupNode(capture=True) в порядке их появления
+        self.capturing_groups = [] 
         self.current_path_lookahead_level = 0
 
     def check(self, ast: RgNode):
-        """
-        Главный метод: 
-         1) Сбор групп + проверка lookahead’ов,
-         2) Ограничение на кол-во групп (не более 9),
-         3) Проверка, что RefNode указывает на существующие группы (номера),
-         4) Проверка «гарантированной инициализации» (check_init).
-        """
-        # 1) Сбор групп, проверка вложенных lookahead’ов:
+ 
         self._collect_groups(ast)
 
-        # 2) Не более 9
         if len(self.capturing_groups) > 9:
             raise SemanticError(
                 f"Слишком много захватывающих групп: {len(self.capturing_groups)} (максимум 9)"
             )
 
-        # 3) Проверить, что (?[num]) <= кол-ва групп
-        #    (для этого сделаем мелкий обход _check_references)
         self._check_references(ast)
 
-        # 3a) Построим capturing_map: {GroupNode: idx}
         capturing_map = {}
         for i, gnode in enumerate(self.capturing_groups, start=1):
             capturing_map[gnode] = i
 
-        # 4) Гарантированная инициализация: запустим check_init
         check_init(ast, set(), set(), capturing_map)
         print_ast(ast, capturing_map)
-        # Если всё прошло без ошибок — значит выражение корректно.
         return True
 
     def _collect_groups(self, node: RgNode):
-        """
-        Сбор (захватывающих) групп + проверка,
-        что внутри (?=...) нет других (?=...) и нет capture-групп.
-        """
+
         if node is None:
             return
 
@@ -140,7 +119,6 @@ class SemanticChecker:
             else:
                 # обычная или (?:...) группа
                 if self.current_path_lookahead_level > 0 and node.capture:
-                    # захватывающая группа внутри lookahead
                     raise SemanticError(
                         "Захватывающая группа внутри опережающего блока (?=...) запрещена"
                     )

@@ -21,7 +21,6 @@ class Token:
         return f"Token({self.type}, value={self.value}, pos={self.pos})"
 
 def tokenize(regex: str):
-    """Функция токенизации строки регулярного выражения."""
     tokens = []
     i = 0
     n = len(regex)

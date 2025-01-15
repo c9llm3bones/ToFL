@@ -103,21 +103,3 @@ if __name__ == "__main__":
         if rules:
             for rule in rules:
                 print(rule)
-"""
-if __name__ == "__main__":
-    regex = "(a|b)*c"
-    tokens = tokenize(regex)
-    parser = Parser(tokens)
-    ast = parser.parseRG()
-
-    checker = SemanticChecker()
-    checker.check(ast)
-
-    capturing_map = {grp: idx for idx, grp in enumerate(checker.capturing_groups, 1)}
-    builder = GrammarBuilder(capturing_map)
-    grammar = builder.build_grammar(ast)
-
-    print("CFG Rules:")
-    for rule in grammar:
-        print(rule)
-"""

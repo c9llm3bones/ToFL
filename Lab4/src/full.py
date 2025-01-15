@@ -53,12 +53,6 @@ class StarNode(RgNode):
         return f"Star({self.child})"
 
 class GroupNode(RgNode):
-    """
-    Для круглых скобок:
-      - capture=True — означает обычную группу '([rg])'
-      - capture=False — для (?:[rg]) (не захватывающая)
-      - lookahead=True — для (?=[rg])
-    """
     def __init__(self, child, capture=True, lookahead=False):
         self.child = child
         self.capture = capture
@@ -91,8 +85,6 @@ class Parser:
         return None
 
     def match(self, expected_type):
-        """Съедает токен ожидаемого типа и возвращает его.
-            Если тип не совпадает, бросает ошибку."""
         tk = self.current_token()
         if tk is None:
             raise ValueError("Unexpected end of token stream")
@@ -118,9 +110,6 @@ class Parser:
         return node
 
     def parseAlt(self):
-        """
-        parseAlt -> parseConcat ( '|' parseConcat )*
-        """
         left = self.parseConcat()
         while self.lookahead_type() == TokenType.ALT:
             self.match(TokenType.ALT)
@@ -129,10 +118,6 @@ class Parser:
         return left
 
     def parseConcat(self):
-        """
-        parseConcat -> parseFactor+
-        Т.е. хотя бы один factor, а затем могут идти ещё factor-ы
-        """
         factors = [self.parseFactor()]
         # Пока следующий токен не ) / | / EOF, это конкатенация
         while True:
@@ -147,9 +132,6 @@ class Parser:
         return node
 
     def parseFactor(self):
-        """
-        parseFactor -> parseBase ('*')?
-        """
         base_node = self.parseBase()
         if self.lookahead_type() == TokenType.STAR:
             self.match(TokenType.STAR)
@@ -288,10 +270,6 @@ def check_init(
     in_progress: set[int], 
     capturing_map: dict[GroupNode, int]
 ) -> set[int]:
-    """
-    Возвращает множество групп (индексов), 
-    которые "полностью инициализированы" на выходе из узла.
-    """
     if node is None:
         return in_set
 
@@ -317,7 +295,6 @@ def check_init(
             new_in_progress = set(in_progress)
             new_in_progress.add(idx)
 
-            # Рекурсивно обходим ребёнка
             child_out = check_init(node.child, in_set, new_in_progress, capturing_map)
 
             out_set = set(child_out)
@@ -349,49 +326,31 @@ def check_init(
         raise SemanticError(f"check_init: неизвестный тип узла {node!r}")
 
 
-# ===== ОСНОВНОЙ КЛАСС ДЛЯ СЕМАНТИЧЕСКОЙ ПРОВЕРКИ =====
 class SemanticChecker:
     def __init__(self):
-        self.capturing_groups = []  # список GroupNode(capture=True) в порядке их появления
+        self.capturing_groups = []  
         self.current_path_lookahead_level = 0
 
     def check(self, ast: RgNode):
-        """
-        Главный метод: 
-         1) Сбор групп + проверка lookahead’ов,
-         2) Ограничение на кол-во групп (не более 9),
-         3) Проверка, что RefNode указывает на существующие группы (номера),
-         4) Проверка «гарантированной инициализации» (check_init).
-        """
-        # 1) Сбор групп, проверка вложенных lookahead’ов:
         self._collect_groups(ast)
 
-        # 2) Не более 9
         if len(self.capturing_groups) > 9:
             raise SemanticError(
                 f"Слишком много захватывающих групп: {len(self.capturing_groups)} (максимум 9)"
             )
 
-        # 3) Проверить, что (?[num]) <= кол-ва групп
-        #    (для этого сделаем мелкий обход _check_references)
         self._check_references(ast)
 
-        # 3a) Построим capturing_map: {GroupNode: idx}
         capturing_map = {}
         for i, gnode in enumerate(self.capturing_groups, start=1):
             capturing_map[gnode] = i
 
-        # 4) Гарантированная инициализация: запустим check_init
         check_init(ast, set(), set(), capturing_map)
         print_ast(ast, capturing_map)
-        # Если всё прошло без ошибок — значит выражение корректно.
         return True
 
     def _collect_groups(self, node: RgNode):
-        """
-        Сбор (захватывающих) групп + проверка,
-        что внутри (?=...) нет других (?=...) и нет capture-групп.
-        """
+
         if node is None:
             return
 
@@ -472,33 +431,18 @@ TERMS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 class GrammarBuilder:
     def __init__(self, capturing_map):
-        """
-        capturing_map: dict[GroupNode, int], 
-           выданный SemanticChecker’ом (GroupNode -> индекс).
-        """
-        self.capturing_map = capturing_map  # GroupNode -> int
+        self.capturing_map = capturing_map
         self.group_counter = 1
-        self.group_map = {}   # {GroupNode -> "Gk"}
-        self.index2nt = {}    # {int -> "Gk"} чтобы RefNode(num) находил готовый нетерминал
+        self.group_map = {} 
+        self.index2nt = {}  
         self.rules = []
 
     def build_grammar(self, ast):
-        # 1) collect_groups: 
-        #   регистрируем GroupNode (capture=True) => "Gk".
-        #   Заодно сопоставим index2nt[num] = "Gk"
         self.collect_groups(ast)
-        # 2) генерируем правила
         self.process_node(ast, "S")
         return self.rules
 
     def collect_groups(self, node):
-        """
-        Регистрируем все захватывающие группы:
-         - если groupNode.capture == True
-         - сопоставляем этому GroupNode свой нетерминал
-         - запоминаем, что если capturing_map[node] = N, 
-           то index2nt[N] = тот же нетерминал
-        """
         if isinstance(node, GroupNode):
 
             if node.capture:
@@ -519,9 +463,6 @@ class GrammarBuilder:
         elif isinstance(node, StarNode):
             self.collect_groups(node.child)
         elif isinstance(node, RefNode):
-            # RefNode сам по себе не создаёт нетерминал,
-            # Но нужно помнить: index2nt[node.num] должен существовать,
-            # если эта группа захватывающая
             pass
         elif isinstance(node, LiteralNode):
             pass
@@ -551,21 +492,14 @@ class GrammarBuilder:
 
         elif isinstance(node, GroupNode):
             if node.capture:
-                # Смотрим, какой это нетерминал
                 nt_name = self.group_map[node]
-                # генерируем правила для содержимого
                 self.process_node(node.child, nt_name)
-                # текущее правило
                 self.rules.append(f"{current_nt} -> {nt_name}")
             else:
-                # (?:...) или (?=...) — не захватывающая
-                # Встраиваем child в тот же нетерминал
                 self.process_node(node.child, current_nt)
 
         elif isinstance(node, RefNode):
-            # Ссылка на группу № node.num
             if node.num not in self.index2nt:
-                # нет такой захватывающей группы
                 raise ValueError(f"RefNode: нет нетерминала для (?[{node.num}])")
             ref_nt = self.index2nt[node.num]
             self.rules.append(f"{current_nt} -> {ref_nt}")
@@ -580,21 +514,11 @@ class GrammarBuilder:
         return nt_name
 
 def generate_cfg(ast):
-    """
-    Шаг интеграции: 
-    1) После парсинга и семантической проверки 
-    2) вызываем GrammarBuilder, который строит CFG.
-    """
     builder = GrammarBuilder()
     rules = builder.build_grammar(ast)
     return rules
 
 def print_ast(node, capturing_map, indent=0):
-    """
-    Рекурсивно печатает дерево с отступами.
-    capturing_map: dict[GroupNode, int] - ассоциирует захватывающую группу со своим номером.
-    indent: текущий уровень вложения (сколько пробелов слева).
-    """
     prefix = "  " * indent  # два пробела на уровень
 
     if node is None:
